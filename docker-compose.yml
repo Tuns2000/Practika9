@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Порт для магазина
+      - "8081:8081"  # Порт для WebSocket
+      - "8082:8082"  # Порт для админки
+    volumes:
+      - ./app:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    # Добавляем ограничения ресурсов
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 500M
+    # Улучшаем настройки безопасности
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

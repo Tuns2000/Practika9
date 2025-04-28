@@ -1,0 +1,11 @@
+# Игнорируем временные файлы и директории, которые не нужны в образе
+*.log
+*.tmp
+*.bak
+node_modules/
+__pycache__/
+.DS_Store
+.env
+.git
+.gitignore
+.vscode/
