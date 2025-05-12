@@ -1,0 +1,542 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интернет-магазин</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .category-filter {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .data-filter {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .filter-btn.active {
+            background-color: #45a049;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .product-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .product-info {
+            padding: 1rem;
+        }
+        .product-name {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .product-price {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 0.5rem;
+        }
+        .product-description {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .product-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .category-tag {
+            background-color: #eee;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .chat-container {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .chat-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 0.5rem;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .chat-input {
+            display: flex;
+            padding: 0.5rem;
+            border-top: 1px solid #eee;
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+        #sendButton {
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            text-align: right;
+            margin-left: auto;
+        }
+        .admin-message {
+            background-color: #f1f1f1;
+        }
+        .server-message {
+            background-color: #f8f8f8;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+            margin: 0.5rem auto;
+        }
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 0.2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Интернет-магазин</h1>
+    </header>
+    
+    <div class="container">
+        <div class="category-filter">
+            <button class="filter-btn active" onclick="filterByCategory('all')">Все товары</button>
+            <button class="filter-btn" onclick="filterByCategory('Электроника')">Электроника</button>
+            <button class="filter-btn" onclick="filterByCategory('Одежда')">Одежда</button>
+            <button class="filter-btn" onclick="filterByCategory('Аудио')">Аудио</button>
+        </div>
+        
+        <div class="data-filter">
+            <button class="filter-btn active" onclick="changeDataView('full')">Полная информация</button>
+            <button class="filter-btn" onclick="changeDataView('namePrice')">Название и цена</button>
+            <button class="filter-btn" onclick="changeDataView('nameDescription')">Название и описание</button>
+        </div>
+        
+        <div class="products" id="products-container">
+            <!-- Здесь будут карточки товаров -->
+        </div>
+    </div>
+    
+    <button class="chat-button" onclick="toggleChat()">💬</button>
+    
+    <div class="chat-container" id="chat">
+        <div class="chat-header">
+            <h3>Чат с поддержкой</h3>
+        </div>
+        <div id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Введите сообщение..." />
+            <button id="sendButton">Отправить</button>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let allProducts = [];
+        let currentCategory = 'all';
+        let currentView = 'full';
+        
+        // GraphQL запросы
+        const GRAPHQL_URL = 'http://localhost:3000/graphql';
+        
+        // Запрос полных данных о товарах
+        const FULL_QUERY = `
+            query {
+                products {
+                    id
+                    name
+                    price
+                    description
+                    categories
+                }
+            }
+        `;
+        
+        // Запрос только имен и цен
+        const NAME_PRICE_QUERY = `
+            query {
+                productNamesAndPrices {
+                    id
+                    name
+                    price
+                }
+            }
+        `;
+        
+        // Запрос только имен и описаний
+        const NAME_DESCRIPTION_QUERY = `
+            query {
+                productNamesAndDescriptions {
+                    id
+                    name
+                    description
+                }
+            }
+        `;
+        
+        // Запрос товаров по категории
+        const CATEGORY_QUERY = `
+            query($category: String!) {
+                productsByCategory(category: $category) {
+                    id
+                    name
+                    price
+                    description
+                    categories
+                }
+            }
+        `;
+        
+        // Функция для выполнения GraphQL запроса
+        async function executeGraphQL(query, variables = {}) {
+            try {
+                const response = await fetch(GRAPHQL_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        variables
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.errors) {
+                    console.error('GraphQL ошибки:', result.errors);
+                    return null;
+                }
+                
+                return result.data;
+            } catch (error) {
+                console.error('Ошибка GraphQL запроса:', error);
+                return null;
+            }
+        }
+        
+        // Функция для получения товаров с использованием GraphQL
+        async function loadProducts() {
+            let data;
+            
+            // В зависимости от выбранного представления данных выбираем нужный запрос
+            if (currentCategory !== 'all') {
+                // Если выбрана категория, запрашиваем товары по категории
+                data = await executeGraphQL(CATEGORY_QUERY, { category: currentCategory });
+                if (data) {
+                    allProducts = data.productsByCategory;
+                }
+            } else {
+                // Иначе выбираем запрос в зависимости от представления
+                switch (currentView) {
+                    case 'namePrice':
+                        data = await executeGraphQL(NAME_PRICE_QUERY);
+                        if (data) {
+                            allProducts = data.productNamesAndPrices;
+                        }
+                        break;
+                    case 'nameDescription':
+                        data = await executeGraphQL(NAME_DESCRIPTION_QUERY);
+                        if (data) {
+                            allProducts = data.productNamesAndDescriptions;
+                        }
+                        break;
+                    default:
+                        data = await executeGraphQL(FULL_QUERY);
+                        if (data) {
+                            allProducts = data.products;
+                        }
+                        break;
+                }
+            }
+            
+            if (!data) {
+                console.error('Не удалось загрузить данные через GraphQL');
+                // Запасной вариант - загрузка через REST
+                try {
+                    const response = await fetch('http://localhost:3000/api/products');
+                    allProducts = await response.json();
+                } catch (error) {
+                    console.error('Ошибка загрузки товаров через REST:', error);
+                }
+            }
+            
+            renderProducts(allProducts);
+        }
+        
+        // Фильтрация товаров по категории
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.category-filter .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Загружаем товары с новым фильтром
+            loadProducts();
+        }
+        
+        // Изменение представления данных
+        function changeDataView(view) {
+            currentView = view;
+            
+            // Обновляем активную кнопку
+            document.querySelectorAll('.data-filter .filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Загружаем товары с новым представлением
+            loadProducts();
+        }
+        
+        // Отображение товаров
+        function renderProducts(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                let categoriesHTML = '';
+                if (product.categories && product.categories.length > 0) {
+                    product.categories.forEach(category => {
+                        categoriesHTML += `<span class="category-tag">${category}</span>`;
+                    });
+                }
+                
+                let cardContent = `
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                `;
+                
+                // Отображаем информацию в зависимости от представления
+                if (currentView === 'namePrice' || (product.price !== undefined && product.description === undefined)) {
+                    cardContent += `<p class="product-price">${product.price} ₽</p>`;
+                } else if (currentView === 'nameDescription' || (product.price === undefined && product.description !== undefined)) {
+                    cardContent += `<p class="product-description">${product.description}</p>`;
+                } else {
+                    // Полное представление
+                    cardContent += `
+                        <p class="product-price">${product.price} ₽</p>
+                        <p class="product-description">${product.description}</p>
+                    `;
+                }
+                
+                // Добавляем категории, если они есть
+                if (categoriesHTML) {
+                    cardContent += `
+                        <div class="product-categories">
+                            ${categoriesHTML}
+                        </div>
+                    `;
+                }
+                
+                cardContent += `</div>`;
+                card.innerHTML = cardContent;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        // Переключение отображения чата
+        function toggleChat() {
+            const chat = document.getElementById('chat');
+            if (chat.style.display === 'flex') {
+                chat.style.display = 'none';
+            } else {
+                chat.style.display = 'flex';
+                // Прокручиваем чат вниз при открытии
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            }
+        }
+        
+        // WebSocket чат
+        let socket;
+        
+        const connectWebSocket = () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                console.log('WebSocket уже подключен');
+                return;
+            }
+
+            socket = new WebSocket('ws://localhost:8081');
+
+            socket.onopen = () => {
+                console.log('WebSocket подключен');
+            };
+
+            socket.onmessage = (event) => {
+                const messagesDiv = document.getElementById('messages');
+                let messageData;
+                try {
+                    messageData = JSON.parse(event.data);
+                } catch (e) {
+                    console.error('Ошибка парсинга сообщения:', e);
+                    return;
+                }
+                
+                // Создаем элемент сообщения
+                const message = document.createElement('div');
+                
+                if (messageData.sender === 'server') {
+                    message.classList.add('server-message');
+                    message.innerHTML = messageData.text;
+                } else {
+                    message.classList.add('message');
+                    if (messageData.sender === 'admin') {
+                        message.classList.add('admin-message');
+                    } else {
+                        message.classList.add('user-message');
+                    }
+                    
+                    message.innerHTML = `
+                        <div><strong>${messageData.sender}:</strong> ${messageData.text}</div>
+                        <div class="message-time">${formatTime(messageData.timestamp)}</div>
+                    `;
+                }
+                
+                messagesDiv.appendChild(message);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket соединение закрыто');
+                // Пытаемся переподключиться через 5 секунд
+                setTimeout(connectWebSocket, 5000);
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket ошибка:', error);
+            };
+        };
+        
+        // Форматирование времени сообщения
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Отправка сообщения
+        document.getElementById('sendButton').addEventListener('click', () => {
+            sendMessage();
+        });
+        
+        // Отправка сообщения по нажатию Enter
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Функция отправки сообщения
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    const messageData = {
+                        sender: 'user',
+                        text: message,
+                        timestamp: new Date().toISOString()
+                    };
+                    socket.send(JSON.stringify(messageData));
+                    messageInput.value = '';
+                } else {
+                    console.log('WebSocket не подключен. Пытаемся переподключиться...');
+                    connectWebSocket();
+                }
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            connectWebSocket();
+        });
+    </script>
+</body>
+</html>

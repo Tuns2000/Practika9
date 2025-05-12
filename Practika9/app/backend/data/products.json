@@ -1,0 +1,31 @@
+[
+  {
+    "id": 3,
+    "name": "Наушники беспроводные Sony WH-1000XM5",
+    "price": 34990,
+    "description": "Hi-Res Audio, Шумоподавление, 30 часов работы",
+    "categories": [
+      "Электроника",
+      "Аудио"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Умные часы Apple Watch Series 9",
+    "price": 39990,
+    "description": "GPS, Always-on Retina display, Водонепроницаемость до 50м",
+    "categories": [
+      "Электроника",
+      "Одежда"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "RTX 4090",
+    "price": 100000,
+    "description": "Sdsfxcv",
+    "categories": [
+      "Электроника"
+    ]
+  }
+]

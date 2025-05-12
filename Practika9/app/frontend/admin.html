@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ Панель</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+        }
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.delete {
+            background-color: #f44336;
+        }
+        button.delete:hover {
+            background-color: #d32f2f;
+        }
+        button.edit {
+            background-color: #2196F3;
+        }
+        button.edit:hover {
+            background-color: #0b7dda;
+        }
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .product-table th, .product-table td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        .product-table th {
+            background-color: #f2f2f2;
+        }
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .category-tag {
+            background-color: #eee;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .categories-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .category-checkbox {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+        .category-checkbox input {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        #chat-admin {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none; /* Изначально скрыт */
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .chat-header {
+            background-color: #333;
+            color: white;
+            padding: 0.5rem;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .chat-input {
+            display: flex;
+            padding: 0.5rem;
+            border-top: 1px solid #eee;
+        }
+        #messageInput {
+            flex-grow: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+        #sendButton {
+            padding: 0.5rem 1rem;
+            background-color: #333;
+        }
+        .message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+        }
+        .admin-message {
+            background-color: #f1f1f1;
+            text-align: right;
+            margin-left: auto;
+        }
+        .server-message {
+            background-color: #f8f8f8;
+            color: #666;
+            text-align: center;
+            font-style: italic;
+            margin: 0.5rem auto;
+        }
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 0.2rem;
+        }
+        /* Стили для кнопки скрытия/отображения чата */
+        .chat-toggle-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Панель администратора</h1>
+    </header>
+    
+    <div class="container">
+        <!-- Добавление товара -->
+        <div class="panel">
+            <h2>Добавить новый товар</h2>
+            <form id="addProductForm">
+                <div class="form-group">
+                    <label for="productName">Название товара:</label>
+                    <input type="text" id="productName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productPrice">Цена (₽):</label>
+                    <input type="number" id="productPrice" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productDescription">Описание:</label>
+                    <textarea id="productDescription"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Категории:</label>
+                    <div class="categories-container">
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="categoryElectronics" value="Электроника">
+                            <label for="categoryElectronics">Электроника</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="categoryClothes" value="Одежда">
+                            <label for="categoryClothes">Одежда</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="categoryAudio" value="Аудио">
+                            <label for="categoryAudio">Аудио</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="categoryOuterwear" value="Верхняя одежда">
+                            <label for="categoryOuterwear">Верхняя одежда</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="categorySmartphones" value="Смартфоны">
+                            <label for="categorySmartphones">Смартфоны</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit">Добавить товар</button>
+            </form>
+        </div>
+        
+        <!-- Пакетное добавление товаров -->
+        <div class="panel">
+            <h2>Добавить несколько товаров</h2>
+            <form id="batchAddForm">
+                <div class="form-group">
+                    <label for="batchProducts">JSON товаров (массив):</label>
+                    <textarea id="batchProducts" placeholder='[
+  { "name": "Товар 1", "price": 100, "description": "Описание", "categories": ["Электроника"] },
+  { "name": "Товар 2", "price": 200, "description": "Описание", "categories": ["Одежда"] }
+]'></textarea>
+                </div>
+                <button type="submit">Добавить товары</button>
+            </form>
+        </div>
+        
+        <!-- Редактирование товара -->
+        <div class="panel" id="editPanel" style="display: none;">
+            <h2>Редактировать товар</h2>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+                
+                <div class="form-group">
+                    <label for="editProductName">Название товара:</label>
+                    <input type="text" id="editProductName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductPrice">Цена (₽):</label>
+                    <input type="number" id="editProductPrice" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editProductDescription">Описание:</label>
+                    <textarea id="editProductDescription"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Категории:</label>
+                    <div class="categories-container" id="editCategoriesContainer">
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="editCategoryElectronics" value="Электроника">
+                            <label for="editCategoryElectronics">Электроника</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="editCategoryClothes" value="Одежда">
+                            <label for="editCategoryClothes">Одежда</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="editCategoryAudio" value="Аудио">
+                            <label for="editCategoryAudio">Аудио</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="editCategoryOuterwear" value="Верхняя одежда">
+                            <label for="editCategoryOuterwear">Верхняя одежда</label>
+                        </div>
+                        <div class="category-checkbox">
+                            <input type="checkbox" id="editCategorySmartphones" value="Смартфоны">
+                            <label for="editCategorySmartphones">Смартфоны</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <button type="submit">Сохранить изменения</button>
+                    <button type="button" onclick="cancelEdit()">Отмена</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Список товаров -->
+        <div class="panel">
+            <h2>Управление товарами</h2>
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Название</th>
+                        <th>Цена</th>
+                        <th>Описание</th>
+                        <th>Категории</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody">
+                    <!-- Здесь будут строки товаров -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Чат для администратора -->
+    <div id="chat-admin">
+        <div class="chat-header">
+            <h3>Чат с клиентами (администратор)</h3>
+        </div>
+        <div id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Введите сообщение..." />
+            <button id="sendButton">Отправить</button>
+        </div>
+    </div>
+
+    <!-- Кнопка для скрытия/отображения чата -->
+    <button class="chat-toggle-button" id="chatToggleButton">💬</button>
+
+    <script>
+        // Глобальные переменные
+        let products = [];
+        
+        // Загрузка товаров
+        async function loadProducts() {
+            try {
+                const response = await fetch('http://localhost:8082/api/admin/products');
+                products = await response.json();
+                renderProductsTable();
+            } catch (error) {
+                console.error('Ошибка загрузки товаров:', error);
+            }
+        }
+        
+        // Отображение товаров в таблице
+        function renderProductsTable() {
+            const tableBody = document.getElementById('productsTableBody');
+            tableBody.innerHTML = '';
+            
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                
+                let categoriesHTML = '';
+                if (product.categories && product.categories.length > 0) {
+                    product.categories.forEach(category => {
+                        categoriesHTML += `<span class="category-tag">${category}</span>`;
+                    });
+                }
+                
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price} ₽</td>
+                    <td>${product.description}</td>
+                    <td><div class="category-tags">${categoriesHTML}</div></td>
+                    <td class="actions">
+                        <button class="edit" onclick="startEdit(${product.id})">Редактировать</button>
+                        <button class="delete" onclick="deleteProduct(${product.id})">Удалить</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Добавление товара
+        document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Собираем категории
+            const categoryCheckboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            const categories = Array.from(categoryCheckboxes).map(checkbox => checkbox.value);
+            
+            const newProduct = {
+                name: document.getElementById('productName').value,
+                price: parseInt(document.getElementById('productPrice').value),
+                description: document.getElementById('productDescription').value,
+                categories: categories
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8082/api/admin/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newProduct)
+                });
+                
+                if (response.ok) {
+                    const addedProduct = await response.json();
+                    products.push(addedProduct);
+                    renderProductsTable();
+                    document.getElementById('addProductForm').reset();
+                    alert('Товар успешно добавлен!');
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при добавлении товара:', error);
+                alert('Произошла ошибка при добавлении товара');
+            }
+        });
+        
+        // Пакетное добавление товаров
+        document.getElementById('batchAddForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const batchProductsText = document.getElementById('batchProducts').value;
+                const batchProducts = JSON.parse(batchProductsText);
+                
+                if (!Array.isArray(batchProducts)) {
+                    alert('Данные должны быть в формате массива JSON');
+                    return;
+                }
+                
+                const response = await fetch('http://localhost:8082/api/admin/products/batch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(batchProducts)
+                });
+                
+                if (response.ok) {
+                    const addedProducts = await response.json();
+                    products = [...products, ...addedProducts];
+                    renderProductsTable();
+                    document.getElementById('batchProducts').value = '';
+                    alert(`Успешно добавлено ${addedProducts.length} товаров!`);
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при пакетном добавлении:', error);
+                alert('Произошла ошибка при добавлении товаров. Проверьте формат JSON.');
+            }
+        });
+        
+        // Начать редактирование товара
+        function startEdit(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductPrice').value = product.price;
+            document.getElementById('editProductDescription').value = product.description || '';
+            
+            // Сбросить все чекбоксы
+            document.querySelectorAll('#editCategoriesContainer input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
+            // Отметить нужные категории
+            if (product.categories && product.categories.length > 0) {
+                product.categories.forEach(category => {
+                    const checkbox = document.querySelector(`#editCategoriesContainer input[value="${category}"]`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            }
+            
+            document.getElementById('editPanel').style.display = 'block';
+            document.getElementById('editPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Отмена редактирования
+        function cancelEdit() {
+            document.getElementById('editPanel').style.display = 'none';
+        }
+        
+        // Сохранение изменений товара
+        document.getElementById('editProductForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const productId = parseInt(document.getElementById('editProductId').value);
+            
+            // Собираем категории
+            const categoryCheckboxes = document.querySelectorAll('#editCategoriesContainer input[type="checkbox"]:checked');
+            const categories = Array.from(categoryCheckboxes).map(checkbox => checkbox.value);
+            
+            const updatedProduct = {
+                name: document.getElementById('editProductName').value,
+                price: parseInt(document.getElementById('editProductPrice').value),
+                description: document.getElementById('editProductDescription').value,
+                categories: categories
+            };
+            
+            try {
+                const response = await fetch(`http://localhost:8082/api/admin/products/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedProduct)
+                });
+                
+                if (response.ok) {
+                    const updatedProductData = await response.json();
+                    // Обновляем товар в массиве
+                    const index = products.findIndex(p => p.id === productId);
+                    if (index !== -1) {
+                        products[index] = updatedProductData;
+                    }
+                    
+                    renderProductsTable();
+                    document.getElementById('editPanel').style.display = 'none';
+                    alert('Товар успешно обновлен!');
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при обновлении товара:', error);
+                alert('Произошла ошибка при обновлении товара');
+            }
+        });
+        
+        // Удаление товара
+        async function deleteProduct(productId) {
+            if (!confirm(`Вы уверены, что хотите удалить товар с ID ${productId}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:8082/api/admin/products/${productId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    // Удаляем товар из массива
+                    products = products.filter(p => p.id !== productId);
+                    renderProductsTable();
+                    alert('Товар успешно удален!');
+                } else {
+                    const error = await response.json();
+                    alert(`Ошибка: ${error.error}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при удалении товара:', error);
+                alert('Произошла ошибка при удалении товара');
+            }
+        }
+        
+        // WebSocket чат
+        let socket;
+        
+        const connectWebSocket = () => {
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                console.log('WebSocket уже подключен');
+                return;
+            }
+
+            socket = new WebSocket('ws://localhost:8081');
+
+            socket.onopen = () => {
+                console.log('WebSocket подключен');
+            };
+
+            socket.onmessage = (event) => {
+                const messagesDiv = document.getElementById('messages');
+                let messageData;
+                try {
+                    messageData = JSON.parse(event.data);
+                } catch (e) {
+                    console.error('Ошибка парсинга сообщения:', e);
+                    return;
+                }
+                
+                // Создаем элемент сообщения
+                const message = document.createElement('div');
+                
+                if (messageData.sender === 'server') {
+                    message.classList.add('server-message');
+                    message.innerHTML = messageData.text;
+                } else {
+                    message.classList.add('message');
+                    if (messageData.sender === 'admin') {
+                        message.classList.add('admin-message');
+                    } else {
+                        message.classList.add('user-message');
+                    }
+                    
+                    message.innerHTML = `
+                        <div><strong>${messageData.sender}:</strong> ${messageData.text}</div>
+                        <div class="message-time">${formatTime(messageData.timestamp)}</div>
+                    `;
+                }
+                
+                messagesDiv.appendChild(message);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket соединение закрыто');
+                // Пытаемся переподключиться через 5 секунд
+                setTimeout(connectWebSocket, 5000);
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket ошибка:', error);
+            };
+        };
+        
+        // Форматирование времени сообщения
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Отправка сообщения
+        document.getElementById('sendButton').addEventListener('click', () => {
+            sendMessage();
+        });
+        
+        // Отправка сообщения по нажатию Enter
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Функция отправки сообщения
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    const messageData = {
+                        sender: 'admin',
+                        text: message,
+                        timestamp: new Date().toISOString()
+                    };
+                    socket.send(JSON.stringify(messageData));
+                    messageInput.value = '';
+                } else {
+                    console.log('WebSocket не подключен. Пытаемся переподключиться...');
+                    connectWebSocket();
+                }
+            }
+        }
+        
+        // Функция переключения видимости чата
+        function toggleAdminChat() {
+            const chatAdmin = document.getElementById('chat-admin');
+            if (chatAdmin.style.display === 'flex') {
+                chatAdmin.style.display = 'none';
+            } else {
+                chatAdmin.style.display = 'flex';
+                // Прокручиваем чат вниз при открытии
+                document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            connectWebSocket();
+            
+            // Добавляем обработчик клика на кнопку переключения чата
+            document.getElementById('chatToggleButton').addEventListener('click', toggleAdminChat);
+        });
+    </script>
+</body>
+</html>
